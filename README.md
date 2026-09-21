@@ -175,3 +175,43 @@ GitHub Actions workflow:
 ---
 
 Built as a clean, extensible foundation for a real core banking platform.
+## Testing
+
+The solution includes two test projects:
+
+| Project | Type | Focus |
+|---------|------|--------|
+| `CoreBanking.UnitTests` | Unit | Auth, Payments, Loans, Accounts, Fraud, Credit score (Moq + FluentAssertions) |
+| `CoreBanking.IntegrationTests` | E2E / Integration | HTTP endpoints via `WebApplicationFactory` + EF InMemory |
+
+### Run all tests
+
+```bash
+dotnet test
+```
+
+### Run only unit tests
+
+```bash
+dotnet test CoreBanking.UnitTests/CoreBanking.UnitTests.csproj
+```
+
+### Run only integration tests
+
+```bash
+dotnet test CoreBanking.IntegrationTests/CoreBanking.IntegrationTests.csproj
+```
+
+### Coverage (optional)
+
+```bash
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+### Notes
+
+- Integration tests replace PostgreSQL with **EF Core InMemory** so they run without Docker.
+- External systems (Paystack, Kafka, SMTP) are not called in unit tests (mocked).
+- Some integration payment flows that require a real Paystack key will assert status codes only.
+- Ensure `JWT_SECRET` is set (or rely on the Development fallback in `Program.cs`).
+
