@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using Konscious.Security.Cryptography;
 using CoreBanking.Application.DTOs;
 using CoreBanking.Application.Interfaces;
 using CoreBanking.Domain.Entities;
@@ -15,6 +14,7 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _uow;
     private readonly IJwtTokenService _jwt;
     private readonly ILogger<AuthService> _logger;
+    private const int WorkFactor = 12;
 
     public AuthService(
         IUserRepository users,
@@ -141,51 +141,14 @@ public class AuthService : IAuthService
             : Roles.Customer;
     }
 
+    // PBKDF2 password hashing (no external package required)
     private static string HashPassword(string password)
     {
-        var salt = RandomNumberGenerator.GetBytes(16);
-
-        using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
-        {
-            Salt = salt,
-            DegreeOfParallelism = 4,   // threads
-            MemorySize = 65536,        // 64 MB
-            Iterations = 4
-        };
-
-        var hash = argon2.GetBytes(32);
-
-        // Format: ARGON2$parallelism$memory$iterations$salt$hash
-        return $"ARGON2$4$65536$4${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
+        return BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
     }
 
-    private static bool VerifyPassword(string password, string stored)
+    private static bool VerifyPassword(string password, string passwordHash)
     {
-        try
-        {
-            var parts = stored.Split('$');
-            if (parts.Length != 6 || parts[0] != "ARGON2") return false;
-
-            var parallelism = int.Parse(parts[1]);
-            var memory = int.Parse(parts[2]);
-            var iterations = int.Parse(parts[3]);
-            var salt = Convert.FromBase64String(parts[4]);
-            var expected = Convert.FromBase64String(parts[5]);
-
-            using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
-            {
-                Salt = salt,
-                DegreeOfParallelism = parallelism,
-                MemorySize = memory,
-                Iterations = iterations
-            };
-
-            var actual = argon2.GetBytes(expected.Length);
-            return CryptographicOperations.FixedTimeEquals(actual, expected);
-        }
-        catch
-        {
-            return false;
-        }
+        return BCrypt.Net.BCrypt.Verify(password, passwordHash);
     }
 }

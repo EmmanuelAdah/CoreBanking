@@ -4,4 +4,3 @@ GET {{CoreBanking.Api_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
-

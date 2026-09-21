@@ -63,12 +63,9 @@ public class BankingDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Email).IsUnique();
-            e.HasIndex(x => x.BVN).IsUnique().HasFilter("\"BVN\" IS NOT NULL");
             e.HasIndex(x => x.RefreshToken);
             e.Property(x => x.Email).HasMaxLength(256);
             e.Property(x => x.Role).HasMaxLength(32);
-            e.Property(x => x.PhoneNumber).HasMaxLength(15);
-            e.Property(x => x.BVN).HasMaxLength(15);
         });
 
         modelBuilder.Entity<IdempotencyRecord>(e =>

@@ -23,11 +23,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Development");
 
-        builder.UseSetting("PAYSTACK_SECRET_KEY", "sk_test_dummy");
-        builder.UseSetting("JWT_SECRET", "ChangeThisToAVeryLongRandomSecretKeyAtLeast32CharactersLong!");
-        builder.UseSetting("JWT_ISSUER", "CoreBanking");
-        builder.UseSetting("JWT_AUDIENCE", "CoreBankingClients");
-
         builder.ConfigureTestServices(services =>
         {
             // Replace Postgres with EF InMemory for isolated e2e tests
